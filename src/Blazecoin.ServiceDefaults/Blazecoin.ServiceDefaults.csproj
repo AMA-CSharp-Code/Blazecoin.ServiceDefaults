@@ -1,0 +1,44 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net10.0</TargetFramework>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <LangVersion>latest</LangVersion>
+    <GenerateDocumentationFile>true</GenerateDocumentationFile>
+    <NoWarn>$(NoWarn);CS1591</NoWarn>
+    <TreatWarningsAsErrors>false</TreatWarningsAsErrors>
+
+    <PackageId>Blazecoin.ServiceDefaults</PackageId>
+    <Version>1.0.0</Version>
+    <Authors>Blazecoin</Authors>
+    <Company>Blazecoin</Company>
+    <Description>Shared service plumbing for the Blazecoin website services: central Serilog logging (console + the BlazecoinLogs SQL store with audit tagging and a correlation id), the JWT signing-key guard, the token-revocation deny-list cache and JwtBearer hook, and the GeoLite2 geo-block middleware with its hot-reloading country and ASN resolvers.</Description>
+    <PackageTags>blazecoin;serilog;geoblock;jwt;aspnetcore</PackageTags>
+    <PackageLicenseExpression>MIT</PackageLicenseExpression>
+    <PackageProjectUrl>https://github.com/AMA-CSharp-Code/Blazecoin.ServiceDefaults</PackageProjectUrl>
+    <RepositoryUrl>https://github.com/AMA-CSharp-Code/Blazecoin.ServiceDefaults</RepositoryUrl>
+    <RepositoryType>git</RepositoryType>
+    <PackageReadmeFile>README.md</PackageReadmeFile>
+    <PublishRepositoryUrl>true</PublishRepositoryUrl>
+    <IncludeSymbols>false</IncludeSymbols>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <FrameworkReference Include="Microsoft.AspNetCore.App" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <!-- Pinned to the versions the seven services already carry (2026-10-13), so adding this package changes no transitive graph. -->
+    <PackageReference Include="MaxMind.GeoIP2" Version="6.1.0" />
+    <PackageReference Include="Microsoft.AspNetCore.Authentication.JwtBearer" Version="10.0.3" />
+    <PackageReference Include="Serilog.AspNetCore" Version="10.0.0" />
+    <PackageReference Include="Serilog.Enrichers.Environment" Version="3.0.1" />
+    <PackageReference Include="Serilog.Sinks.MSSqlServer" Version="10.0.0" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Include="..\..\README.md" Pack="true" PackagePath="\" />
+  </ItemGroup>
+
+</Project>

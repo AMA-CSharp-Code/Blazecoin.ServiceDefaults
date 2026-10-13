@@ -1,0 +1,27 @@
+# Test gate: the library's own xUnit suite on every PR and push (hermetic — no database, no network).
+name: Tests
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+  workflow_dispatch: {}
+
+permissions:
+  contents: read
+
+jobs:
+  dotnet-test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Set up .NET 10 SDK
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: "10.0.x"
+      - name: Restore
+        run: dotnet restore tests/Blazecoin.ServiceDefaults.Tests/Blazecoin.ServiceDefaults.Tests.csproj
+      - name: Test
+        run: dotnet test tests/Blazecoin.ServiceDefaults.Tests/Blazecoin.ServiceDefaults.Tests.csproj --no-restore --verbosity normal
+      - name: Pack (proves the package builds)
+        run: dotnet pack src/Blazecoin.ServiceDefaults/Blazecoin.ServiceDefaults.csproj -c Release -o out --nologo
