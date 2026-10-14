@@ -58,4 +58,5 @@ jobs:
         run: dotnet nuget push "out/Blazecoin.ServiceDefaults.${VERSION}.nupkg" --api-key "${{ steps.login.outputs.NUGET_API_KEY }}" --source https://api.nuget.org/v3/index.json --skip-duplicate
 
       - name: Summary
-        run: echo "Published Blazecoin.ServiceDefaults ${VERSION} - indexing takes a few minutes: https://www.nuget.org/packages/Blazecoin.ServiceDefaults/${VERSION}" >> "$GITHUB_STEP_SUMMARY"
+        run: |
+          echo "Published Blazecoin.ServiceDefaults ${VERSION}. Indexing takes a few minutes - https://www.nuget.org/packages/Blazecoin.ServiceDefaults/${VERSION}" >> "$GITHUB_STEP_SUMMARY"
