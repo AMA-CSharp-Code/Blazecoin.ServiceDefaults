@@ -1,0 +1,61 @@
+# Release: publish Blazecoin.ServiceDefaults to NuGet.org through Trusted Publishing.
+#
+# No API key exists anywhere. NuGet.org trusts THIS workflow file in THIS repository (the policy on the
+# package owner's "API keys" page, "Trusted Publishing" section: owner AMA-CSharp-Code, repository
+# Blazecoin.ServiceDefaults, workflow release.yml). NuGet/login exchanges the job's GitHub OIDC token for
+# a short-lived push key that lives only in this job's memory.
+#
+# Trigger: push a tag v<version> that matches <Version> in the csproj (the job refuses a mismatch), or
+# "Run workflow" by hand, which publishes the csproj version. --skip-duplicate makes a re-run harmless.
+name: Release
+
+on:
+  push:
+    tags: ["v*"]
+  workflow_dispatch: {}
+
+permissions:
+  contents: read
+  id-token: write # the OIDC token NuGet/login exchanges for the temporary push key
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up .NET 10 SDK
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: "10.0.x"
+
+      - name: Read the package version and check it against the tag
+        run: |
+          v=$(grep -oP '(?<=<Version>)[^<]+' src/Blazecoin.ServiceDefaults/Blazecoin.ServiceDefaults.csproj)
+          echo "csproj version: $v"
+          if [ "$GITHUB_REF_TYPE" = "tag" ] && [ "$GITHUB_REF_NAME" != "v$v" ]; then
+            echo "::error::tag $GITHUB_REF_NAME does not match <Version> $v - bump the csproj or re-tag"
+            exit 1
+          fi
+          echo "VERSION=$v" >> "$GITHUB_ENV"
+
+      - name: Restore
+        run: dotnet restore tests/Blazecoin.ServiceDefaults.Tests/Blazecoin.ServiceDefaults.Tests.csproj
+
+      - name: Test
+        run: dotnet test tests/Blazecoin.ServiceDefaults.Tests/Blazecoin.ServiceDefaults.Tests.csproj --no-restore --verbosity normal
+
+      - name: Pack
+        run: dotnet pack src/Blazecoin.ServiceDefaults/Blazecoin.ServiceDefaults.csproj -c Release -o out --nologo
+
+      - name: NuGet.org login (Trusted Publishing)
+        id: login
+        uses: NuGet/login@v1
+        with:
+          user: AMA_CODE # the NuGet.org account that owns the package and the trusted-publishing policy
+
+      - name: Push to NuGet.org
+        run: dotnet nuget push "out/Blazecoin.ServiceDefaults.${VERSION}.nupkg" --api-key "${{ steps.login.outputs.NUGET_API_KEY }}" --source https://api.nuget.org/v3/index.json --skip-duplicate
+
+      - name: Summary
+        run: echo "Published Blazecoin.ServiceDefaults ${VERSION} - indexing takes a few minutes: https://www.nuget.org/packages/Blazecoin.ServiceDefaults/${VERSION}" >> "$GITHUB_STEP_SUMMARY"

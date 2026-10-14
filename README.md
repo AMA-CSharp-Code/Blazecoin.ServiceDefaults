@@ -56,9 +56,17 @@ MIT.
 
 ## Releasing
 
-Bump `<Version>` in `src/Blazecoin.ServiceDefaults/Blazecoin.ServiceDefaults.csproj`, then `Publish-ServiceDefaults.ps1`
-runs the tests, packs and pushes to NuGet.org. A new package takes about ten minutes to validate and index before
-`dotnet restore` can see it. After it is listed, bump the `Blazecoin.ServiceDefaults` reference in each consuming service.
+1. Bump `<Version>` in `src/Blazecoin.ServiceDefaults/Blazecoin.ServiceDefaults.csproj`, commit, push `main`.
+2. Tag it and push the tag: `git tag v1.0.1 && git push origin v1.0.1`.
+3. `.github/workflows/release.yml` runs the tests, packs, signs in to NuGet.org through **Trusted Publishing** and
+   pushes the package. No API key exists anywhere: NuGet.org trusts this workflow file in this repository (policy on
+   the `AMA_CODE` account's *API keys* page, *Trusted Publishing* section: owner `AMA-CSharp-Code`, repository
+   `Blazecoin.ServiceDefaults`, workflow `release.yml`, no environment). The job refuses a tag that does not match
+   `<Version>`; *Run workflow* by hand publishes the csproj version; a re-run is harmless (`--skip-duplicate`).
+4. A new version takes a few minutes to index (poll
+   `https://api.nuget.org/v3-flatcontainer/blazecoin.servicedefaults/index.json`), then bump the
+   `Blazecoin.ServiceDefaults` reference in each consuming service.
 
-1.0.0 was pushed with a short-lived API key (2026-10-14). The intended path from 1.0.1 on is NuGet.org **Trusted
-Publishing** from a release workflow in this repo, so no key exists anywhere; see the superproject TODO under S11.
+`Publish-ServiceDefaults.ps1 -NoPush` still packs into `out\` for the local `blz-local` feed, so a consuming service
+can be built and tested against an unpublished version before the tag goes up. Its push path (an API key read from a
+file) is the fallback only; 1.0.0 went out that way on 2026-10-14 and the key was deleted the same morning.
