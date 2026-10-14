@@ -53,3 +53,12 @@ Package versions are pinned to what the consuming services already carry, so add
 ## Licence
 
 MIT.
+
+## Releasing
+
+Bump `<Version>` in `src/Blazecoin.ServiceDefaults/Blazecoin.ServiceDefaults.csproj`, then `Publish-ServiceDefaults.ps1`
+runs the tests, packs and pushes to NuGet.org. A new package takes about ten minutes to validate and index before
+`dotnet restore` can see it. After it is listed, bump the `Blazecoin.ServiceDefaults` reference in each consuming service.
+
+1.0.0 was pushed with a short-lived API key (2026-10-14). The intended path from 1.0.1 on is NuGet.org **Trusted
+Publishing** from a release workflow in this repo, so no key exists anywhere; see the superproject TODO under S11.
