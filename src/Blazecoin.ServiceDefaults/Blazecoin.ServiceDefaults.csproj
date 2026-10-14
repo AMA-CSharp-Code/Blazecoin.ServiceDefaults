@@ -10,7 +10,7 @@
     <TreatWarningsAsErrors>false</TreatWarningsAsErrors>
 
     <PackageId>Blazecoin.ServiceDefaults</PackageId>
-    <Version>1.0.0</Version>
+    <Version>1.0.1</Version>
     <Authors>Blazecoin</Authors>
     <Company>Blazecoin</Company>
     <Description>Shared service plumbing for the Blazecoin website services: central Serilog logging (console + the BlazecoinLogs SQL store with audit tagging and a correlation id), the JWT signing-key guard, the token-revocation deny-list cache and JwtBearer hook, and the GeoLite2 geo-block middleware with its hot-reloading country and ASN resolvers.</Description>
@@ -35,6 +35,10 @@
     <PackageReference Include="Serilog.AspNetCore" Version="10.0.0" />
     <PackageReference Include="Serilog.Enrichers.Environment" Version="3.0.1" />
     <PackageReference Include="Serilog.Sinks.MSSqlServer" Version="10.0.0" />
+    <!-- Transitive override (1.0.1): Serilog.Sinks.MSSqlServer -> Microsoft.Data.SqlClient 7.0.1 -> Pkcs 9.0.13, which
+         CVE-2026-84008 (published 2026-10-13) flags; the net10 patch line is the fix. Consumers inherit it at depth 2,
+         ahead of the sink's depth-3 pin. Drop once the sink moves on. -->
+    <PackageReference Include="System.Security.Cryptography.Pkcs" Version="10.0.13" />
   </ItemGroup>
 
   <ItemGroup>
