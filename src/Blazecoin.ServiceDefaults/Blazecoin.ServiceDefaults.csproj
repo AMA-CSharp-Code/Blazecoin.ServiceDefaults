@@ -10,7 +10,7 @@
     <TreatWarningsAsErrors>false</TreatWarningsAsErrors>
 
     <PackageId>Blazecoin.ServiceDefaults</PackageId>
-    <Version>1.0.1</Version>
+    <Version>1.0.2</Version>
     <Authors>Blazecoin</Authors>
     <Company>Blazecoin</Company>
     <Description>Shared service plumbing for the Blazecoin website services: central Serilog logging (console + the BlazecoinLogs SQL store with audit tagging and a correlation id), the JWT signing-key guard, the token-revocation deny-list cache and JwtBearer hook, and the GeoLite2 geo-block middleware with its hot-reloading country and ASN resolvers.</Description>

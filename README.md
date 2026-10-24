@@ -6,7 +6,7 @@ on its own, so a fix lands once and every service gets it at its next build.
 | Namespace | What it is |
 |---|---|
 | `Blazecoin.ServiceDefaults.Logging` | `AddBlazecoinLogging()` wires Serilog to the console and, when a `LogsConnection` is configured, to the shared `BlazecoinLogs.dbo.AppLogs` table (Warning+ or audit-tagged events only). `LogAudit()` tags an Information event so the store keeps it. `UseBlazecoinCorrelationId()` mints or forwards `X-Correlation-Id` and echoes it on the response. |
-| `Blazecoin.ServiceDefaults.Security` | `JwtKeyGuard.Require()` refuses to start with a missing or short HS256 key. `RevokedTokenCache` + `TokenRevocationPoller` + `TokenRevocationJwtEvents` enforce the Identity service's token deny-list in any JWT-validating service. |
+| `Blazecoin.ServiceDefaults.Security` | `JwtKeyGuard.Require()` refuses to start with a missing or short HS256 key. `AddBlazecoinTokenRevocation()` (cache + options + feed refresher + poller) and `TokenRevocationJwtEvents` enforce the Identity service's token deny-list in any JWT-validating service. |
 | `Blazecoin.ServiceDefaults.GeoBlock` | `GeoBlockMiddleware` answers 451 to blocked jurisdictions with an operator bypass cookie; `MaxMindGeoIpCountryResolver` and `MaxMindGeoIpAsnResolver` read GeoLite2 databases into memory and hot-reload them when the file changes. |
 
 ## Use
@@ -34,10 +34,14 @@ app.UseGeoBlock();                                   // after UseForwardedHeader
 using Blazecoin.ServiceDefaults.Security;
 
 var key = JwtKeyGuard.Require(builder.Configuration["Jwt:Key"]);
-builder.Services.AddSingleton<RevokedTokenCache>();
-builder.Services.AddHostedService<TokenRevocationPoller>();
+builder.Services.AddBlazecoinTokenRevocation(builder.Configuration);   // cache + options (TokenRevocation section) + named HttpClient + poller
 // options.Events = TokenRevocationJwtEvents.Create();  inside AddJwtBearer
 ```
+
+Since 1.0.2 the poller is `ITokenRevocationFeedRefresher` (one fetch-and-apply, testable with a stub handler) paced by
+the registered `TimeProvider`; `TokenRevocationOptions` replaces the raw configuration reads (`IdentityBaseUrl`,
+`FeedKey`, `PollSeconds` ≥ 5, `TimeoutSeconds`). The hand-wired pair (`AddSingleton<RevokedTokenCache>` +
+`AddHostedService<TokenRevocationPoller>`) no longer resolves on its own — use the one registration above.
 
 The sink's SQL login needs SELECT as well as INSERT on `dbo.AppLogs`: the bulk copy it uses runs a metadata query first.
 
